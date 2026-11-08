@@ -97,7 +97,22 @@ export default function App() {
   const [config, setConfig] = useState<CompanyConfig>(() => {
     try {
       const saved = localStorage.getItem('hhy_logistics_config');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_COMPANY_CONFIG,
+          ...parsed,
+          telegramConfig: {
+            ...INITIAL_COMPANY_CONFIG.telegramConfig,
+            ...(parsed?.telegramConfig || {}),
+          },
+          googleSyncConfig: {
+            driveFolder: '禾禾園物流簽收單圖庫',
+            spreadsheetName: '禾禾園物流系統資料庫',
+            ...(parsed?.googleSyncConfig || {}),
+          },
+        };
+      }
       const first = INITIAL_16_TRUCKS[0];
       return {
         ...INITIAL_COMPANY_CONFIG,

@@ -27,8 +27,8 @@ export const TelegramModal: React.FC<TelegramModalProps> = ({
   routeResult,
   onUpdateTelegramConfig,
 }) => {
-  const [botToken, setBotToken] = useState(config.telegramConfig.botToken || '');
-  const [chatId, setChatId] = useState(config.telegramConfig.chatId || '');
+  const [botToken, setBotToken] = useState(config.telegramConfig?.botToken || '');
+  const [chatId, setChatId] = useState(config.telegramConfig?.chatId || '');
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null);
   const [copied, setCopied] = useState(false);

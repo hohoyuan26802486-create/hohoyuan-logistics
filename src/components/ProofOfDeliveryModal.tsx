@@ -224,8 +224,8 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
 
   // Push to Telegram Bot API
   const pushToTelegram = async (record: ProofOfDeliveryRecord) => {
-    const botToken = config.telegramConfig.botToken?.trim();
-    const chatId = config.telegramConfig.chatId?.trim();
+    const botToken = config.telegramConfig?.botToken?.trim();
+    const chatId = config.telegramConfig?.chatId?.trim();
 
     if (!botToken || !chatId) {
       return false;
@@ -299,7 +299,7 @@ export const ProofOfDeliveryModal: React.FC<ProofOfDeliveryModalProps> = ({
     };
 
     // Attempt Telegram Push
-    if (config.telegramConfig.botToken && config.telegramConfig.chatId) {
+    if (config.telegramConfig?.botToken && config.telegramConfig?.chatId) {
       setPushStatus('正在推播通知至 Telegram 物流群...');
       const pushSuccess = await pushToTelegram(podRecord);
       podRecord.telegramPushed = pushSuccess;
