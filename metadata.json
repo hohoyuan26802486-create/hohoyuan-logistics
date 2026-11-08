@@ -1,0 +1,6 @@
+{
+  "name": "禾禾園物流智慧排單系統",
+  "description": "禾禾園物流專用智慧排單與司機配送管理系統，支援拍照辨識訂單、多廚房自動合併、百貨分樓層辨識、Google Maps即時路況最佳化排程、車輛金額限制管理與Telegram群組即時推播。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

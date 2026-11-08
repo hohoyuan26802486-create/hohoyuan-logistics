@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "禾禾園物流智慧排單與冷鏈配送系統",
+  "short_name": "禾禾園物流",
+  "description": "禾禾園物流專用智慧排單與司機配送管理系統，支援拍照辨識訂單、送達單據拍照交叉比對、防漏簽名檢查、Telegram群組推播與Google試算表同步。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#be123c",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
