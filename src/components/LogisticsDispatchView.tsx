@@ -193,7 +193,12 @@ export const LogisticsDispatchView: React.FC<LogisticsDispatchViewProps> = ({
 
                 let statusDirectionText = '';
                 if (isDelivered) {
-                  statusDirectionText = `✅ 已於 ${stop.deliveredAt || stop.estimatedArrival} 送達完成簽收！`;
+                  const pod = stop.proofOfDelivery;
+                  if (pod?.hasIssue) {
+                    statusDirectionText = `🚨 已於 ${stop.deliveredAt || stop.estimatedArrival} 送達，但司機回報【${pod.issueTypeName || '需補貨'}】(含 ${pod.replacementItems?.length || 1} 項補貨明細)！`;
+                  } else {
+                    statusDirectionText = `✅ 已於 ${stop.deliveredAt || stop.estimatedArrival} 送達完成簽收，單據核銷自動標記【OK】！`;
+                  }
                 } else if (isInTransit) {
                   statusDirectionText = `🚚 司機正前往此站中！${distToCustomerKm ? `目前距貴店約 ${distToCustomerKm} 公里，` : ''}預計 ${stop.estimatedArrival} 抵達門市。`;
                 } else {

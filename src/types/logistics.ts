@@ -26,6 +26,15 @@ export interface CompanyConfig {
   };
 }
 
+export interface PodItemDetail {
+  sku: string; // 產品料號 (e.g. "HHY-F012")
+  name: string; // 商品名稱 (e.g. "特級大油豆腐")
+  quantity: number; // 數量
+  unit: string; // 單位 (箱/包/公斤/條/罐)
+  reason: '拿錯貨' | '貨下錯' | '報要補貨' | '破損退冰' | '客戶少點/未收到' | '其他'; // 異常原因
+  note?: string; // 備註
+}
+
 export interface ProofOfDeliveryRecord {
   photos: string[]; // 簽收單據照片 (支援多張)
   expectedSlipCount: number; // 應有單據張數 (e.g. 3)
@@ -33,9 +42,20 @@ export interface ProofOfDeliveryRecord {
   isSlipCountMatched: boolean; // 張數是否吻合
   isSignatureVerified: boolean; // 是否已確認簽名/蓋店章
   signatureDataUrl?: string; // 客戶螢幕電子簽名
+  
+  // 品項交叉比對與補貨通報
+  isItemsUnchanged: boolean; // 客戶單據品項是否無修改 (無修改為 true)
+  verificationResultStatus: 'OK' | '異常通報' | '待核驗'; // 核銷狀態：品項無改且單據齊全直接判定為 'OK'
+  
   hasIssue: boolean; // 是否有修改單據或貨況問題
-  issueType?: 'amount_modified' | 'damaged' | 'shortage' | 'rejected' | 'defrosted' | 'rescheduled' | 'other';
+  issueType?: 'amount_modified' | 'damaged' | 'shortage' | 'wrong_item' | 'wrong_delivery' | 'replenish_needed' | 'rejected' | 'defrosted' | 'rescheduled' | 'other';
   issueTypeName?: string;
+  replacementItems?: PodItemDetail[]; // 要補貨或異常的品項清單（產品料號、商品名稱、數量、單位、原因）
+  
+  // 司機忘記帶單，公司拍照補發電子核銷模式
+  isOfficeReprintMode?: boolean; // 是否為公司拍照補發單據模式
+  officeReprintPhotoUrl?: string; // 公司傳來的單據圖
+  
   originalAmount: number; // 原金額
   actualAmount: number; // 實收/修改後金額
   differenceAmount: number; // 差額 (originalAmount - actualAmount)
@@ -44,6 +64,7 @@ export interface ProofOfDeliveryRecord {
   reportedAt: string; // "11:42:08"
   telegramPushed?: boolean;
 }
+
 
 export interface RawOrder {
   id: string;

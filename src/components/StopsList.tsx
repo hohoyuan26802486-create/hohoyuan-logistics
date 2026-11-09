@@ -391,16 +391,18 @@ export const StopsList: React.FC<StopsListProps> = ({
                             onClick={() => onOpenPODModal && onOpenPODModal(stop)}
                             className={`flex items-center gap-1 text-xs font-bold px-2 py-1.5 rounded-lg border transition cursor-pointer ${
                               stop.proofOfDelivery.hasIssue
-                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
-                                : 'bg-rose-50 hover:bg-rose-100 text-rose-800 border-rose-200'
+                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-400 shadow-2xs'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300 shadow-2xs'
                             }`}
                             title="點擊檢視回傳單據、簽名與貨況紀錄"
                           >
                             <Camera className="w-3.5 h-3.5" />
                             <span>
                               {stop.proofOfDelivery.hasIssue
-                                ? `⚠️ 異常紀錄 (${stop.proofOfDelivery.photos.length}張)`
-                                : `已存證 (${stop.proofOfDelivery.photos.length}張照)`}
+                                ? `🚨 需補貨/改單 (${stop.proofOfDelivery.replacementItems?.length || 1}項)`
+                                : stop.proofOfDelivery.isOfficeReprintMode
+                                ? '📱 公司補單+電子簽名'
+                                : '✅ 核銷 OK (無改單)'}
                             </span>
                           </button>
                         )}

@@ -28,7 +28,7 @@ export function exportLogisticsToExcel(
   const todayStr = options?.dateLabel || new Date().toISOString().split('T')[0];
   const timeNow = new Date().toLocaleTimeString('zh-TW', { hour12: false });
 
-  // CSV Columns Header
+  // CSV Columns Header - Tailored for Ho Hey Yuan Logistics Accounting & Dispatch
   const headers = [
     '送貨日期',
     '車次名稱',
@@ -47,11 +47,13 @@ export function exportLogisticsToExcel(
     '含稅總金額 (NT$)',
     '現場實收金額 (NT$)',
     '折讓/差額 (NT$)',
+    '會計核銷審核 (OK/異常)',
+    '補貨商品明細 (產品料號/商品名稱/數量/原因)',
     '預計到達時間',
     '實際送達時間',
-    '簽收狀態',
+    '配送狀態',
     '單據拍照核驗 (張數)',
-    '客戶店章/簽核',
+    '簽核存證模式',
     '貨況異常/修改單據說明',
     '司機最新GPS位置',
     '客戶時間限制',
@@ -63,6 +65,8 @@ export function exportLogisticsToExcel(
   let grandUntaxed = 0;
   let grandTax = 0;
   let grandTotal = 0;
+  let grandActual = 0;
+  let grandDifference = 0;
   let totalOrderCount = 0;
 
   targetTrucks.forEach(truck => {
@@ -77,7 +81,7 @@ export function exportLogisticsToExcel(
     });
 
     truckResult.stops.forEach(stop => {
-      // Each sub-order gets its own row for detailed accounting breakdown!
+      // Each sub-order gets its own row for detailed accounting breakdown
       stop.subOrders.forEach((sub, sIdx) => {
         grandUntaxed += sub.untaxedAmount;
         grandTax += sub.taxAmount;
@@ -85,9 +89,60 @@ export function exportLogisticsToExcel(
         totalOrderCount += 1;
 
         const slipSeq = sub.slipSequence || (stop.subOrders.length > 1 ? `${sIdx + 1}/${stop.subOrders.length}` : '1/1');
-        const statusText =
+        const pod = stop.proofOfDelivery;
+
+        // Accounting Audit Status:
+        // When items are unchanged and there are no issues -> direct "OK"!
+        let accountingAuditStatus = '待核銷';
+        if (stop.status === 'delivered') {
+          if (pod) {
+            if (pod.isItemsUnchanged && !pod.hasIssue) {
+              accountingAuditStatus = 'OK';
+            } else if (pod.hasIssue) {
+              accountingAuditStatus = '⚠️ 需補貨/改單';
+            } else {
+              accountingAuditStatus = 'OK';
+            }
+          } else {
+            accountingAuditStatus = 'OK';
+          }
+        }
+
+        // Detailed Replenishment Items with SKU, Name, Quantity, and Reason
+        let replenishmentSummary = '無 (品項齊全無修改)';
+        if (pod?.replacementItems && pod.replacementItems.length > 0) {
+          replenishmentSummary = pod.replacementItems
+            .map(
+              (item, idx) =>
+                `[${idx + 1}] 料號:${item.sku} 品名:${item.name} 數量:${item.quantity}${item.unit} (原因:${item.reason}${item.note ? ` - ${item.note}` : ''})`
+            )
+            .join('； ');
+        } else if (pod?.hasIssue) {
+          replenishmentSummary = `[${pod.issueTypeName || '異常'}] ${pod.issueNotes || '無品項拆分'}`;
+        }
+
+        // Signing Mode
+        let signMode = '未核銷';
+        if (pod?.isOfficeReprintMode) {
+          signMode = '公司拍照補單 + 手機電子簽名';
+        } else if (pod?.signatureDataUrl) {
+          signMode = '紙本拍照 + 手機螢幕手寫電子簽名';
+        } else if (pod?.isSignatureVerified) {
+          signMode = '紙本單據已蓋章/簽名';
+        } else if (stop.status === 'delivered') {
+          signMode = '現場已簽收';
+        }
+
+        const actualSubAmount = pod ? pod.actualAmount : sub.totalAmount;
+        const diffAmount = pod ? pod.differenceAmount : 0;
+        grandActual += actualSubAmount;
+        grandDifference += diffAmount;
+
+        const deliveryStatusText =
           stop.status === 'delivered'
-            ? '已完成簽收'
+            ? accountingAuditStatus === 'OK'
+              ? '已送達 (OK)'
+              : '已送達 (有異常/待補貨)'
             : stop.status === 'in_transit'
             ? '配送途中'
             : stop.status === 'issue'
@@ -110,18 +165,20 @@ export function exportLogisticsToExcel(
           String(sub.untaxedAmount),
           String(sub.taxAmount),
           String(sub.totalAmount),
-          String(stop.proofOfDelivery ? stop.proofOfDelivery.actualAmount : sub.totalAmount),
-          String(stop.proofOfDelivery?.differenceAmount || 0),
+          String(actualSubAmount),
+          String(diffAmount),
+          accountingAuditStatus, // 會計核銷審核 (OK/異常)
+          replenishmentSummary, // 補貨商品明細 (料號/名稱/數量/原因)
           stop.estimatedArrival,
           stop.deliveredAt || (stop.status === 'delivered' ? stop.estimatedArrival : '未簽收'),
-          statusText,
-          stop.proofOfDelivery
-            ? `已拍 ${stop.proofOfDelivery.actualSlipCount}/${stop.proofOfDelivery.expectedSlipCount} 張 (比對${stop.proofOfDelivery.isSlipCountMatched ? '齊全' : '不符'})`
+          deliveryStatusText,
+          pod
+            ? pod.isOfficeReprintMode
+              ? '公司補單存證 (1張)'
+              : `已拍 ${pod.actualSlipCount}/${pod.expectedSlipCount} 張 (比對${pod.isSlipCountMatched ? '齊全' : '不符'})`
             : '未拍照比對',
-          stop.proofOfDelivery?.isSignatureVerified ? '已確認簽核/店章' : '未簽核',
-          stop.proofOfDelivery?.hasIssue
-            ? `[${stop.proofOfDelivery.issueTypeName || '異常'}] ${stop.proofOfDelivery.issueNotes || ''}`
-            : '正常無異常',
+          signMode,
+          pod?.hasIssue ? `[${pod.issueTypeName || '異常'}] ${pod.issueNotes || ''}` : '正常無異常',
           truck.currentLocation?.areaName || '出發總部',
           stop.timeConstraint || '無限制',
           sub.notes || stop.notes || '',
@@ -147,8 +204,10 @@ export function exportLogisticsToExcel(
     String(grandUntaxed),
     String(grandTax),
     String(grandTotal),
-    String(grandTotal), // 實收預設同總額
-    '0',
+    String(grandActual || grandTotal),
+    String(grandDifference),
+    '後台核對完畢',
+    '補貨商品總計如上',
     '',
     '',
     '',
