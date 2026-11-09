@@ -28,9 +28,10 @@ export function getFormattedDate(dateObj: Date = new Date()): string {
  */
 export function saveDailySnapshot(trucks: TruckItem[], targetDate: string = getFormattedDate()): void {
   try {
-    const totalOrdersCount = trucks.reduce((sum, t) => sum + (t.orders?.length || 0), 0);
-    const grandTotalAmount = trucks.reduce(
-      (sum, t) => sum + (t.orders || []).reduce((s, o) => s + (o.totalAmount || 0), 0),
+    const safeTrucks = (trucks || []).filter(Boolean);
+    const totalOrdersCount = safeTrucks.reduce((sum, t) => sum + (t?.orders?.length || 0), 0);
+    const grandTotalAmount = safeTrucks.reduce(
+      (sum, t) => sum + (t?.orders || []).reduce((s, o) => s + (o?.totalAmount || 0), 0),
       0
     );
 

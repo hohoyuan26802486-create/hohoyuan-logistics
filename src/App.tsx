@@ -68,7 +68,7 @@ export default function App() {
               ...t,
               isSandbox: isSb,
               truckCapacityLimit: isSb ? 99999999 : t.truckCapacityLimit,
-              orders: (t.orders || []).filter(o => !o.id.startsWith('demo-') && !o.id.startsWith('ord-0')),
+              orders: (t.orders || []).filter(o => o && typeof o.id === 'string' && !o.id.startsWith('demo-') && !o.id.startsWith('ord-0')),
             };
           });
         }
@@ -130,8 +130,8 @@ export default function App() {
 
   // Raw Orders state for active truck (starts from 0, purging legacy dummy orders)
   const [orders, setOrders] = useState<RawOrder[]>(() => {
-    const truckOrders = currentTruck.orders || [];
-    return truckOrders.filter(o => !o.id.startsWith('demo-') && !o.id.startsWith('ord-0'));
+    const truckOrders = (currentTruck && currentTruck.orders) || [];
+    return truckOrders.filter(o => o && typeof o.id === 'string' && !o.id.startsWith('demo-') && !o.id.startsWith('ord-0'));
   });
 
   // Save trucks and active truck to LocalStorage and 14-day history archive

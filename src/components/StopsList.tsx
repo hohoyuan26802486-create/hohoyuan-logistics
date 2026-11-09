@@ -59,6 +59,7 @@ export const StopsList: React.FC<StopsListProps> = ({
   onUpdateDriverLocation,
   onOpenPODModal,
 }) => {
+  const safeStops = stops || [];
   const [expandedStops, setExpandedStops] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (stopId: string) => {
@@ -69,7 +70,7 @@ export const StopsList: React.FC<StopsListProps> = ({
     window.open(generateSingleStopNavUrl(address), '_blank');
   };
 
-  if (stops.length === 0) {
+  if (safeStops.length === 0) {
     return (
       <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border-2 border-dashed border-rose-300 shadow-sm space-y-5 max-w-2xl mx-auto">
         <div className="w-16 h-16 rounded-3xl bg-rose-50 border-2 border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-xs">

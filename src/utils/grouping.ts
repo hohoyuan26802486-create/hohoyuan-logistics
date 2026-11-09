@@ -57,13 +57,15 @@ export function groupOrdersIntoStops(
   orders: RawOrder[],
   defaultUnloadMinutes = 20
 ): DeliveryStop[] {
+  const safeOrders = (orders || []).filter(o => o && typeof o === 'object');
+
   // Map of grouping key -> list of orders
   // Key format: `${cleanStoreBrand}:::${cleanBaseAddress}`
   const groupMap = new Map<string, RawOrder[]>();
 
-  orders.forEach(order => {
-    const brand = normalizeStoreBrand(order.storeName);
-    const baseAddr = normalizeBaseAddress(order.address);
+  safeOrders.forEach(order => {
+    const brand = normalizeStoreBrand(order.storeName || '');
+    const baseAddr = normalizeBaseAddress(order.address || '');
     // Unique key combines brand + base street address
     const key = `${brand.toLowerCase()}:::${baseAddr.toLowerCase()}`;
 
@@ -75,9 +77,9 @@ export function groupOrdersIntoStops(
 
   // Count occurrences of base addresses to detect multi-customer shopping malls
   const addressCustomerMap = new Map<string, Set<string>>();
-  orders.forEach(order => {
-    const baseAddr = normalizeBaseAddress(order.address);
-    const brand = normalizeStoreBrand(order.storeName);
+  safeOrders.forEach(order => {
+    const baseAddr = normalizeBaseAddress(order.address || '');
+    const brand = normalizeStoreBrand(order.storeName || '');
     if (!addressCustomerMap.has(baseAddr)) {
       addressCustomerMap.set(baseAddr, new Set());
     }

@@ -39,8 +39,21 @@ export const RouteSummaryCard: React.FC<RouteSummaryCardProps> = ({
   onBatchAddSandboxOrders,
   onAddSandboxTruck,
 }) => {
-  const { amountSummary, totalDistanceKm, totalTravelMinutes, totalUnloadMinutes, estimatedReturnTime, stops } =
-    routeResult;
+  const {
+    amountSummary = {
+      totalUntaxed: 0,
+      totalTax: 0,
+      grandTotal: 0,
+      truckLimit: config?.truckCapacityLimit || 120000,
+      capacityPercentage: 0,
+      isOverLimit: false,
+    },
+    totalDistanceKm = 0,
+    totalTravelMinutes = 0,
+    totalUnloadMinutes = 0,
+    estimatedReturnTime = config?.departureTime || '08:00',
+    stops = [],
+  } = routeResult || {};
 
   const handleOpenGoogleMapsMultiStop = () => {
     const stopAddresses = stops.map(s => s.address);

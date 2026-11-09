@@ -66,8 +66,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  const totalStops = routeResult.stops.length;
-  const deliveredCount = routeResult.stops.filter(s => s.status === 'delivered').length;
+  const totalStops = routeResult?.stops?.length || 0;
+  const deliveredCount = (routeResult?.stops || []).filter(s => s && s.status === 'delivered').length;
   const progressPct = totalStops > 0 ? Math.round((deliveredCount / totalStops) * 100) : 0;
 
   return (

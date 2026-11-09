@@ -40,14 +40,14 @@ export const FleetOperationsOverview: React.FC<FleetOperationsOverviewProps> = (
 
   // Calculate per-truck analytics
   const truckAnalytics = useMemo(() => {
-    return trucks.map(truck => {
-      const stops = groupOrdersIntoStops(truck.orders || [], defaultUnloadMinutes);
-      const orders = truck.orders || [];
-      const totalUntaxed = orders.reduce((sum, o) => sum + (o.untaxedAmount || 0), 0);
-      const totalTax = orders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
-      const grandTotal = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-      const limit = truck.truckCapacityLimit || 120000;
-      const loadPercentage = truck.isSandbox
+    return (trucks || []).filter(Boolean).map(truck => {
+      const orders = truck?.orders || [];
+      const stops = groupOrdersIntoStops(orders, defaultUnloadMinutes);
+      const totalUntaxed = orders.reduce((sum, o) => sum + (o?.untaxedAmount || 0), 0);
+      const totalTax = orders.reduce((sum, o) => sum + (o?.taxAmount || 0), 0);
+      const grandTotal = orders.reduce((sum, o) => sum + (o?.totalAmount || 0), 0);
+      const limit = truck?.truckCapacityLimit || 120000;
+      const loadPercentage = truck?.isSandbox
         ? 0
         : limit > 0
         ? Math.round((grandTotal / limit) * 100)
@@ -62,8 +62,8 @@ export const FleetOperationsOverview: React.FC<FleetOperationsOverviewProps> = (
         grandTotal,
         limit,
         loadPercentage,
-        isOverLimit: !truck.isSandbox && grandTotal > limit,
-        isActive: truck.id === activeTruckId,
+        isOverLimit: !truck?.isSandbox && grandTotal > limit,
+        isActive: truck?.id === activeTruckId,
       };
     });
   }, [trucks, activeTruckId, defaultUnloadMinutes]);

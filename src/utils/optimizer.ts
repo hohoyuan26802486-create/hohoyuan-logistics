@@ -5,7 +5,8 @@ import { normalizeBaseAddress } from './grouping';
 /**
  * Parses "HH:mm" into minutes from midnight
  */
-export function timeStringToMinutes(timeStr: string): number {
+export function timeStringToMinutes(timeStr?: string): number {
+  if (!timeStr || typeof timeStr !== 'string') return 480; // Default 08:00
   const parts = timeStr.split(':');
   const h = parseInt(parts[0], 10) || 0;
   const m = parseInt(parts[1], 10) || 0;
